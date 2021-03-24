@@ -10,6 +10,9 @@
 	<script type="text/javascript" src="jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
 	<script type="text/javascript">
 		$(function () {
+			if(window.top!=window){
+				window.top.location=window.location;
+			}
 			// 输入框获取焦点
 			$("#userAct").focus();
 			// 在当前敲回车键登录

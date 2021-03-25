@@ -4,6 +4,7 @@ package com.bjpowernode.crm.workbench.web.controller;
 import com.bjpowernode.crm.exception.ActivitySaveException;
 import com.bjpowernode.crm.settings.domain.User;
 import com.bjpowernode.crm.settings.service.UserService;
+import com.bjpowernode.crm.vo.ActivityVO;
 import com.bjpowernode.crm.workbench.domain.Activity;
 import com.bjpowernode.crm.workbench.service.ActivityService;
 import org.springframework.stereotype.Controller;
@@ -52,5 +53,27 @@ public class ActivityController {
             map.put("success",true);
             return map;
         }
+    }
+
+
+    // 获取市场活动列表
+    @RequestMapping("pageList")
+    @ResponseBody
+    public ActivityVO<Activity> pageList(String pageNo,String pageSize,String searchName,
+                                         String searchOwner,String searchStartTime,String searchEndTime){
+        Map<String,Object> map = new HashMap<>();
+        int pageN = Integer.valueOf(pageNo);
+        int pageS = Integer.valueOf(pageSize);
+        // 略过条数放入map中
+        int skipNo = (pageN-1)*pageS;
+        map.put("skipNo",skipNo);
+        map.put("pageSize",pageS);
+        map.put("searchName",searchName);
+        map.put("searchOwner",searchOwner);
+        map.put("searchStartTime",searchStartTime);
+        map.put("searchEndTime",searchEndTime);
+
+        ActivityVO<Activity> vo = activityService.pageList(map);
+        return vo;
     }
 }

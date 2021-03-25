@@ -80,9 +80,44 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				}
 			})
 		})
-
-
-	});
+		// 加载页面后访问数据库，展示市场活动列表
+		pageList(1,2);
+		// 为查询按钮绑定pageList方法
+		// 修改按钮添加pageList方法
+		// 为删除按钮添加pageList方法
+		// 为分页插件添加pageList方法
+		// 分页查询方法
+		function pageList(pageNo,pageSize) {
+			$.ajax({
+				url:"workbench/Activity/pageList",
+				type:"get",
+				dataType:"json",
+				data:{
+					"pageNo":pageNo,
+					"pageSize":pageSize,
+					"searchName":$.trim($("#searchName").val()),
+					"searchOwner":$.trim($("#searchOwner").val()),
+					"searchStartTime":$("#searchStartTime").val(),
+					"searchEndTime":$("#searchEndTime").val()
+				},
+				success:function (data) {
+					// 插入市场活动列表
+					var html = "";
+					$.each(data.objList,function (i,n) {
+						html +='<tr class="active">';
+						html +='<td><input type="checkbox" value="'+n.id+'"/></td>';
+						html +='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'detail.html\';">'+n.name+'</a></td>';
+						html +='<td>'+n.owner+'</td>';
+						html +='<td>'+n.startDate+'</td>';
+						html +='<td>'+n.endDate+'</td>';
+						html +='</tr>';
+					})
+					$("#activityTbody").html(html);
+				}
+			})
+			alert("进入pageLis方法")
+		}
+	})
 	
 </script>
 </head>
@@ -233,14 +268,14 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" id="searchName" type="text">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">所有者</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" id="searchOwner" type="text">
 				    </div>
 				  </div>
 
@@ -248,13 +283,13 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">开始日期</div>
-					  <input class="form-control" type="text" id="startTime" />
+					  <input class="form-control" type="text" id="searchStartTime" />
 				    </div>
 				  </div>
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">结束日期</div>
-					  <input class="form-control" type="text" id="endTime">
+					  <input class="form-control" type="text" id="searchEndTime">
 				    </div>
 				  </div>
 				  
@@ -281,8 +316,8 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 							<td>结束日期</td>
 						</tr>
 					</thead>
-					<tbody>
-						<tr class="active">
+					<tbody id="activityTbody">
+						<%--<tr class="active">
 							<td><input type="checkbox" /></td>
 							<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='detail.html';">发传单</a></td>
                             <td>zhangsan</td>
@@ -295,7 +330,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
                             <td>zhangsan</td>
                             <td>2020-10-10</td>
                             <td>2020-10-20</td>
-                        </tr>
+                        </tr>--%>
 					</tbody>
 				</table>
 			</div>

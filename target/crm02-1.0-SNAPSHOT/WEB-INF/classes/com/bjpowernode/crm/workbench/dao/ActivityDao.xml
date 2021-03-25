@@ -4,8 +4,47 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.bjpowernode.crm.workbench.dao.ActivityDao">
+    <!--添加市场活动-->
     <insert id="saveActivity" >
         insert into tbl_activity (id,owner,name,startDate,endDate,cost,description,createTime,createBy)
         values (#{id},#{owner},#{name},#{startDate},#{endDate},#{cost},#{description},#{createTime},#{createBy})
     </insert>
+    <!--获取符合查询条件市场活动列表-->
+    <select id="getActivitiesByCondition" resultType="Activity">
+        select a.id,a.name,u.name as owner,a.startDate,a.endDate from tbl_activity a join tbl_user u on a.owner=u.id
+        <where>
+            <if test="searchName!=null and searchName!=''">
+                and a.name= like '%' #{searchName} '%'
+            </if>
+            <if test="searchOwner!=null and searchOwner!=''">
+                and u.name=like '%' #{searchOwner} '%'
+            </if>
+            <if test="searchStartTime!=null and searchStartTime!=''">
+                and a.startDate &gt; #{searchStartTime}
+            </if>
+            <if test="searchEndTime!=null and searchEndTime!=''">
+                and a.endDate &lt; #{searchEndTime}
+            </if>
+        </where>
+        order by a.createTime desc
+        limit #{skipNo},#{pageSize}
+    </select>
+    <!--获取符合查询条件的市场活动条数-->
+    <select id="getTotalByCondition" resultType="int">
+        select count(*) from tbl_activity a join tbl_user u on a.owner=u.id
+        <where>
+            <if test="searchName!=null and searchName!=''">
+                and a.name= like '%' #{searchName} '%'
+            </if>
+            <if test="searchOwner!=null and searchOwner!=''">
+                and u.owner=like '%' #{searchOwner} '%'
+            </if>
+            <if test="searchStartTime!=null and searchStartTime!=''">
+                and a.startDate &gt; #{searchStartTime}
+            </if>
+            <if test="searchEndTime!=null and searchEndTime!=''">
+                and a.endDate &lt; #{searchEndTime}
+            </if>
+        </where>
+    </select>
 </mapper>

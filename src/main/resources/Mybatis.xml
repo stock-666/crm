@@ -11,10 +11,12 @@
     <typeAliases>
         <!--把实体类的别名都设为类名-->
         <package name="com.bjpowernode.crm.settings.domain"/>
+        <package name="com.bjpowernode.crm.workbench.domain"/>
     </typeAliases>
     <!-- sql mapper(sql映射文件)的位置-->
     <mappers>
         <!--可加入多个sql映射文件-->
         <package name="com.bjpowernode.crm.settings.dao"/>
+        <package name="com.bjpowernode.crm.workbench.dao"/>
     </mappers>
 </configuration>

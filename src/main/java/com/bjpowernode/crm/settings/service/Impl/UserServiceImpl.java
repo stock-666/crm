@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -50,5 +51,11 @@ public class UserServiceImpl implements UserService {
             throw new LoginException("账户已被锁定，请联系管理员!");
         }
         return user;
+    }
+
+    @Override
+    public List<User> getUserList() {
+        List<User> userList = userDao.getUserList();
+        return userList;
     }
 }

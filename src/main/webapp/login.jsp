@@ -14,7 +14,7 @@
 				window.top.location=window.location;
 			}
 			// 输入框获取焦点
-			$("#userAct").focus();
+			$("#loginAct").focus();
 			// 在当前敲回车键登录
 			$(window).keydown(function (event) {
 				if (event.keyCode ===13 ){

@@ -1,5 +1,6 @@
-package com.bjpowernode.crm.settings.web.contoller;
+package com.bjpowernode.crm.controllerExceptionHandler;
 
+import com.bjpowernode.crm.exception.ActivitySaveException;
 import com.bjpowernode.crm.exception.LoginException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,11 +16,19 @@ public class ControllerException{
     @ResponseBody
     @ExceptionHandler(LoginException.class)
     public Map<String,Object> loginException(Exception ex){
-        System.out.println("进入异常处理");
         Map<String,Object> map = new HashMap<>();
         map.put("success",false);
         map.put("msg",ex.getMessage());
-        System.out.println("异常处理完成");
+        return map;
+    }
+
+    // 市场活动添加异常
+    @ResponseBody
+    @ExceptionHandler(ActivitySaveException.class)
+    public Map<String,Object> saveActivityEH(Exception ex){
+        Map<String,Object> map = new HashMap<>();
+        map.put("success",false);
+        map.put("msg",ex.getMessage());
         return map;
     }
 }

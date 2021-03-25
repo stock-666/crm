@@ -6,8 +6,9 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
     <!--注册controller组件扫面器-->
     <context:component-scan base-package="com.bjpowernode.crm.settings.web.contoller"/>
+    <context:component-scan base-package="com.bjpowernode.crm.workbench.web.controller"/>
     <!--注册全局异常组件扫面器-->
-    <context:component-scan base-package="com.bjpowernode.crm.exception"/>
+    <context:component-scan base-package="com.bjpowernode.crm.controllerExceptionHandler"/>
     <!--指定视图解析器-->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/view/"/>

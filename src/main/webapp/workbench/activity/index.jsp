@@ -67,6 +67,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					"description":$.trim($("#create-description").val())
 				},
 				success:function (data) {
+					alert(data.success);
 					if (data.success){
 						// 重置表单
 						$("#createActivityForm")[0].reset();

@@ -35,6 +35,7 @@ public class ActivityController {
 
     // 添加市场活动
     @RequestMapping("saveActivity")
+    @ResponseBody
     public Map<String,Object> saveActivity(Activity activity, HttpServletRequest request) throws ActivitySaveException {
         Map<String,Object> map = new HashMap<>();
         // 获取创建人
@@ -42,7 +43,6 @@ public class ActivityController {
         activity.setCreateBy(createBy);
         // 执行插入操作
         int result= activityService.saveActivity(activity);
-        System.out.println(result);
         // 判断执行结果
         if (result<=0){
             // 失败则弹窗提示
@@ -50,7 +50,6 @@ public class ActivityController {
         }else{
             // 成功则返回true
             map.put("success",true);
-            System.out.println("市场活动添加成功");
             return map;
         }
     }

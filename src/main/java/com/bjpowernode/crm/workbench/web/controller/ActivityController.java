@@ -1,7 +1,9 @@
 package com.bjpowernode.crm.workbench.web.controller;
 
 
+import com.bjpowernode.crm.exception.ActivityDeleteException;
 import com.bjpowernode.crm.exception.ActivitySaveException;
+import com.bjpowernode.crm.exception.ActivityUpdateException;
 import com.bjpowernode.crm.settings.domain.User;
 import com.bjpowernode.crm.settings.service.UserService;
 import com.bjpowernode.crm.vo.ActivityVO;
@@ -76,4 +78,45 @@ public class ActivityController {
         ActivityVO<Activity> vo = activityService.pageList(map);
         return vo;
     }
+
+    // 删除市场活动
+    @RequestMapping("delete")
+    @ResponseBody
+    public Map<String,Object> delete(String[] ids) throws ActivityDeleteException {
+        Boolean success = activityService.delete(ids);
+        Map<String,Object> map = new HashMap<>();
+        map.put("success",success);
+        return map;
+    }
+
+    // 获取选中市场活动信息以及用户列表
+    @RequestMapping("edit")
+    @ResponseBody
+    public Map<String,Object> edit(String id){
+        return activityService.edit(id);
+    }
+
+    // 更新市场活动的修改操作
+    @ResponseBody
+    @RequestMapping("update")
+    public Map<String,Object> update(Activity activity,HttpServletRequest request) throws ActivityUpdateException {
+        Map<String,Object> map = new HashMap<>();
+        // 获取修改人
+        String editBy = ((User)request.getSession().getAttribute("user")).getName();
+        activity.setEditBy(editBy);
+        // 执行修改操作
+        int result= activityService.updateActivity(activity);
+        // 判断执行结果
+        if (result<=0){
+            // 失败则弹窗提示
+            throw new ActivityUpdateException("市场活动修改失败！");
+        }else{
+            // 成功则返回true
+            map.put("success",true);
+            return map;
+        }
+    }
+
+
+
 }

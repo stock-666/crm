@@ -14,4 +14,13 @@ public interface ActivityDao {
 
     // 获取符合查询条件的市场活动条数
     List<Activity> getActivitiesByCondition(Map<String,Object> map);
+
+    // 根据id删除市场活动
+    int activityDeleteById(String[] ids);
+
+    // 根据id获取市场活动对象
+    Activity getActivityById(String id);
+
+    // 更新市场活动
+    int update(Activity activity);
 }

@@ -15,7 +15,10 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 <script type="text/javascript" src="jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"></script>
 <script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js"></script>
-
+<script type="text/javascript" src="jquery/bs_pagination/jquery.bs_pagination.min.js"></script>
+<%--分页插件--%>
+<script type="text/javascript" src="jquery/bs_pagination/jquery.bs_pagination.min.css"></script>
+<script type="text/javascript" src="jquery/bs_pagination/en.js"></script>
 <script type="text/javascript">
 	$(function(){
 
@@ -70,8 +73,9 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					if (data.success){
 						// 重置表单
 						$("#createActivityForm")[0].reset();
-						// 刷新市场活动列表
-
+						// 刷新市场活动列表,有bootstrap插件提供
+						pageList(1,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+						alert("市场活动创建成功");
 						// 关闭市场创建模态窗口
 						$("#createActivityModal").modal("hide");
 					}else {
@@ -82,12 +86,26 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 		})
 		// 加载页面后访问数据库，展示市场活动列表
 		pageList(1,2);
-		// 为查询按钮绑定pageList方法
+		// 为查询按钮绑定事件
+		$("#searchBtn").click(function () {
+			// 点击查询按钮时，将查询参数保存到隐藏域中
+			$("#hide-name").val($.trim($("#searchName").val()));
+			$("#hide-owner").val($.trim($("#searchOwner").val()));
+			$("#hide-startDate").val($.trim($("#searchStartTime").val()));
+			$("#hide-endDate").val($.trim($("#searchEndTime").val()));
+			pageList(1,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+
+		})
 		// 修改按钮添加pageList方法
 		// 为删除按钮添加pageList方法
 		// 为分页插件添加pageList方法
-		// 分页查询方法
+		// 获取市场活动列表
 		function pageList(pageNo,pageSize) {
+			// 每次查询的时候，将隐藏域中的值赋给搜索框
+			$("#searchName").val($.trim($("#hide-name").val()));
+			$("#searchOwner").val($.trim($("#hide-owner").val()));
+			$("#searchStartTime").val($.trim($("#hide-startDate").val()));
+			$("#searchEndTime").val($.trim($("#hide-endDate").val()));
 			$.ajax({
 				url:"workbench/Activity/pageList",
 				type:"get",
@@ -105,7 +123,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					var html = "";
 					$.each(data.objList,function (i,n) {
 						html +='<tr class="active">';
-						html +='<td><input type="checkbox" value="'+n.id+'"/></td>';
+						html +='<td><input type="checkbox" name="oncheck" value="'+n.id+'"/></td>';
 						html +='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'detail.html\';">'+n.name+'</a></td>';
 						html +='<td>'+n.owner+'</td>';
 						html +='<td>'+n.startDate+'</td>';
@@ -113,16 +131,168 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						html +='</tr>';
 					})
 					$("#activityTbody").html(html);
+					// 计算总页数
+					var totalPages = data.total%pageSize?parseInt(data.total/pageSize)+1:data.total/pageSize;
+					// 加入分页组件
+					$("#activityPage").bs_pagination({
+						currentPage: pageNo, // 页码
+						rowsPerPage: pageSize, // 每页显示的记录条数
+						maxRowsPerPage: 20, // 每页最多显示的记录条数
+						totalPages: totalPages, // 总页数
+						totalRows: data.total, // 总记录条数
+
+						visiblePageLinks: 3, // 显示几个卡片
+
+						showGoToPage: true,
+						showRowsPerPage: true,
+						showRowsInfo: true,
+						showRowsDefaultInfo: true,
+
+						onChangePage : function(event, data){
+							pageList(data.currentPage , data.rowsPerPage);
+						}
+					})
 				}
 			})
-			alert("进入pageLis方法")
+
 		}
+		// 复选框的全选和全不选
+		// 给全选框添加事件
+		$("#allChecked").click(function () {
+			$("input[name=oncheck]").prop("checked",this.checked)
+		})
+		// 通过复选框的选中个数来控制全选框的选中
+		$("#activityTbody").on("click",$("input[name=oncheck]"),function () {
+			$("#allChecked").prop("checked",$("input[name=oncheck]").length==$("input[name=oncheck]:checked").length)
+		})
+
+		// 为删除按钮绑定事件，点击按钮删除选中的市场活动
+		$("#deleteBtn").click(function () {
+			// 获取被选中的市场活动对象
+			var $activities = $("input[name=oncheck]:checked");
+			// 判断市场活动id的个数
+			if ($activities.length == 0){
+				alert("请选择要删除的市场活动")
+			}else {
+				if (confirm("是否确定删除选中市场活动")){
+					var ids = new Array();
+					// 获取选中的市场活动id
+					$.each($activities,function (i,n) {
+						ids.push(n.value);
+					})
+					// 发送ajax请求，删除数据
+					$.ajax({
+						url:"workbench/Activity/delete",
+						type:"post",
+						dataType:"json",
+						traditional:true,
+						data:{"ids":ids},
+						success:function (data) {
+							// 判断是否删除成功
+							if (data.success){
+								// 成功后刷新列表
+								pageList($("#activityPage").bs_pagination('getOption', 'currentPage')
+										,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+
+								// 成功后去除全选
+								$("#allChecked").prop("checked",false);
+							}else{
+								alert(data.msg)
+							}
+						}
+					})
+				}
+			}
+		})
+
+		// 为修改按钮绑定事件，点击按钮打开修改模态窗口，默认加载选中的市场活动信息
+		$("#editBtn").click(function () {
+			// 判断选中的条数
+			var $activitiy = $("input[name=oncheck]:checked");
+			if ($activitiy.length ==1){
+				var id = $activitiy.val();
+				// 引入日期插件
+				$(".time").datetimepicker({
+					minView: "month",
+					language:  'zh-CN',
+					format: 'yyyy-mm-dd',
+					autoclose: true,
+					todayBtn: true,
+					pickerPosition: "bottom-left"
+				});
+				// 获取选中的市场活动信息并铺值
+				$.ajax({
+					url:"workbench/Activity/edit",
+					type:"post",
+					dataType:"json",
+					data:{"id":id},
+					success:function (data) {
+						var html = "<option></option>";
+
+						$.each(data.ulist,function (i,n) {
+							html += "<option value='"+n.id+"'>"+n.name+"</option>";
+						})
+						// 给所有者下拉框铺值
+						$("#edit-owner").html(html);
+						// 给市场活动信息铺值
+						$("#edit-id").val(data.activity.id);
+						$("#edit-name").val(data.activity.name);
+						$("#edit-owner").val(data.activity.owner);
+						$("#edit-cost").val(data.activity.cost);
+						$("#edit-startDate").val(data.activity.startDate);
+						$("#edit-endDate").val(data.activity.endDate);
+						$("#edit-description").val(data.activity.description);
+					}
+				})
+				// 打开修改市场活动的模态窗口
+				$("#editActivityModal").modal("show");
+			}else{
+				alert("请选择一条需要修改的市场活动")
+			}
+
+		})
+
+		// 为修改按钮绑定事件，点击按钮执行update操作
+		$("#updateBtn").click(function () {
+			// 通过ajax请求进行添加市场活动
+			$.ajax({
+				url:"workbench/Activity/update",
+				type:"post",
+				dataType:"json",
+				data:{
+					"id":$("#edit-id").val(),
+					"owner":$("#edit-owner").val(),
+					"name":$.trim($("#edit-name").val()),
+					"startDate":$("#edit-startDate").val(),
+					"endDate":$("#edit-endDate").val(),
+					"cost":$.trim($("#edit-cost").val()),
+					"description":$.trim($("#edit-description").val())
+				},
+				success:function (data) {
+					if (data.success){
+						// 刷新市场活动列表
+						pageList($("#activityPage").bs_pagination('getOption', 'currentPage')
+								,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+						alert("市场修改创建成功");
+						// 成功后去除全选
+						$("#allChecked").prop("checked",false);
+						// 关闭市场创建模态窗口
+						$("#editActivityModal").modal("hide");
+					}else {
+						alert(data.msg);
+					}
+				}
+			})
+		})
 	})
 	
 </script>
 </head>
 <body>
-
+	<input type="hidden" id="hide-name">
+	<input type="hidden" id="hide-owner">
+	<input type="hidden" id="hide-startDate">
+	<input type="hidden" id="hide-endDate">
 	<!-- 创建市场活动的模态窗口 -->
 	<div class="modal fade" id="createActivityModal" role="dialog">
 		<div class="modal-dialog" role="document" style="width: 85%;">
@@ -197,30 +367,32 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				<div class="modal-body">
 				
 					<form class="form-horizontal" role="form">
-					
+
+						<input type="hidden" id="edit-id">
+
 						<div class="form-group">
 							<label for="edit-marketActivityOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="edit-marketActivityOwner">
-								  <option>zhangsan</option>
+								<select class="form-control" id="edit-owner">
+								  <%--<option>zhangsan</option>
 								  <option>lisi</option>
-								  <option>wangwu</option>
+								  <option>wangwu</option>--%>
 								</select>
 							</div>
                             <label for="edit-marketActivityName" class="col-sm-2 control-label">名称<span style="font-size: 15px; color: red;">*</span></label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-marketActivityName" value="发传单">
+                                <input type="text" class="form-control" id="edit-name">
                             </div>
 						</div>
 
 						<div class="form-group">
 							<label for="edit-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-startTime" value="2020-10-10">
+								<input type="text" class="form-control" id="edit-startDate" value="2020-10-10">
 							</div>
 							<label for="edit-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-endTime" value="2020-10-20">
+								<input type="text" class="form-control" id="edit-endDate" value="2020-10-20">
 							</div>
 						</div>
 						
@@ -234,7 +406,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						<div class="form-group">
 							<label for="edit-describe" class="col-sm-2 control-label">描述</label>
 							<div class="col-sm-10" style="width: 81%;">
-								<textarea class="form-control" rows="3" id="edit-describe">市场活动Marketing，是指品牌主办或参与的展览会议与公关市场活动，包括自行主办的各类研讨会、客户交流会、演示会、新产品发布会、体验会、答谢会、年会和出席参加并布展或演讲的展览会、研讨会、行业交流会、颁奖典礼等</textarea>
+								<textarea class="form-control" rows="3" id="edit-description"></textarea>
 							</div>
 						</div>
 						
@@ -243,7 +415,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">更新</button>
+					<button type="button" class="btn btn-primary" id="updateBtn" data-dismiss="modal">更新</button>
 				</div>
 			</div>
 		</div>
@@ -293,15 +465,15 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				    </div>
 				  </div>
 				  
-				  <button type="submit" class="btn btn-default">查询</button>
+				  <button type="button" id="searchBtn" class="btn btn-default">查询</button>
 				  
 				</form>
 			</div>
 			<div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7; height: 50px; position: relative;top: 5px;">
 				<div class="btn-group" style="position: relative; top: 18%;">
 				  <button type="button" class="btn btn-primary" id="createActivityBtn"><span class="glyphicon glyphicon-plus"></span> 创建</button>
-				  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#editActivityModal"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
-				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
+				  <button type="button" class="btn btn-default" id="editBtn"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
+				  <button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
 				
 			</div>
@@ -309,7 +481,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 				<table class="table table-hover">
 					<thead>
 						<tr style="color: #B3B3B3;">
-							<td><input type="checkbox" /></td>
+							<td><input type="checkbox" id="allChecked"/></td>
 							<td>名称</td>
                             <td>所有者</td>
 							<td>开始日期</td>
@@ -317,57 +489,13 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						</tr>
 					</thead>
 					<tbody id="activityTbody">
-						<%--<tr class="active">
-							<td><input type="checkbox" /></td>
-							<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='detail.html';">发传单</a></td>
-                            <td>zhangsan</td>
-							<td>2020-10-10</td>
-							<td>2020-10-20</td>
-						</tr>
-                        <tr class="active">
-                            <td><input type="checkbox" /></td>
-                            <td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='detail.html';">发传单</a></td>
-                            <td>zhangsan</td>
-                            <td>2020-10-10</td>
-                            <td>2020-10-20</td>
-                        </tr>--%>
+
 					</tbody>
 				</table>
 			</div>
 			
 			<div style="height: 50px; position: relative;top: 30px;">
-				<div>
-					<button type="button" class="btn btn-default" style="cursor: default;">共<b>50</b>条记录</button>
-				</div>
-				<div class="btn-group" style="position: relative;top: -34px; left: 110px;">
-					<button type="button" class="btn btn-default" style="cursor: default;">显示</button>
-					<div class="btn-group">
-						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-							10
-							<span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="#">20</a></li>
-							<li><a href="#">30</a></li>
-						</ul>
-					</div>
-					<button type="button" class="btn btn-default" style="cursor: default;">条/页</button>
-				</div>
-				<div style="position: relative;top: -88px; left: 285px;">
-					<nav>
-						<ul class="pagination">
-							<li class="disabled"><a href="#">首页</a></li>
-							<li class="disabled"><a href="#">上一页</a></li>
-							<li class="active"><a href="#">1</a></li>
-							<li><a href="#">2</a></li>
-							<li><a href="#">3</a></li>
-							<li><a href="#">4</a></li>
-							<li><a href="#">5</a></li>
-							<li><a href="#">下一页</a></li>
-							<li class="disabled"><a href="#">末页</a></li>
-						</ul>
-					</nav>
-				</div>
+                <div id="activityPage"></div>
 			</div>
 			
 		</div>

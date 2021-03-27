@@ -14,10 +14,10 @@
         select a.id,a.name,u.name as owner,a.startDate,a.endDate from tbl_activity a join tbl_user u on a.owner=u.id
         <where>
             <if test="searchName!=null and searchName!=''">
-                and a.name= like '%' #{searchName} '%'
+                a.name like '%' #{searchName} '%'
             </if>
             <if test="searchOwner!=null and searchOwner!=''">
-                and u.name=like '%' #{searchOwner} '%'
+                and u.name like '%' #{searchOwner} '%'
             </if>
             <if test="searchStartTime!=null and searchStartTime!=''">
                 and a.startDate &gt; #{searchStartTime}
@@ -34,10 +34,10 @@
         select count(*) from tbl_activity a join tbl_user u on a.owner=u.id
         <where>
             <if test="searchName!=null and searchName!=''">
-                and a.name= like '%' #{searchName} '%'
+                a.name like '%' #{searchName} '%'
             </if>
             <if test="searchOwner!=null and searchOwner!=''">
-                and u.owner=like '%' #{searchOwner} '%'
+                and u.owner like '%' #{searchOwner} '%'
             </if>
             <if test="searchStartTime!=null and searchStartTime!=''">
                 and a.startDate &gt; #{searchStartTime}
@@ -47,4 +47,27 @@
             </if>
         </where>
     </select>
+
+    <!--删除指定ID的市场活动-->
+    <delete id="activityDeleteById">
+        delete from tbl_activity
+        where id in
+        <foreach collection="array" open="(" close=")" item="aid" separator=",">
+            #{aid}
+        </foreach>
+
+    </delete>
+
+    <!--根据id获取市场活动对象-->
+    <select id="getActivityById" resultType="Activity">
+        select * from tbl_activity where id=#{id}
+    </select>
+
+    <!--更新市场活动-->
+    <update id="update">
+        update tbl_activity
+        set owner=#{owner},name=#{name},startDate=#{startDate},
+        endDate=#{endDate},cost=#{cost},description=#{description},editTime=#{editTime},editBy=#{editBy}
+        where id=#{id}
+    </update>
 </mapper>

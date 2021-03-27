@@ -26,7 +26,8 @@
     <!--注册Mapper扫描器，创建动态代理类Dao对象-->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="sqlSessionFactoryBeanName" value="SqlSessionFactory"/>
-        <property name="basePackage" value="com.bjpowernode.crm.settings.dao,com.bjpowernode.crm.workbench.dao"/>
+        <property name="basePackage" value="com.bjpowernode.crm.settings.dao,
+                                            com.bjpowernode.crm.workbench.dao"/>
     </bean>
 
     <!--声明事务管理器对象-->

@@ -1,9 +1,6 @@
 package com.bjpowernode.crm.controllerExceptionHandler;
 
-import com.bjpowernode.crm.exception.ActivityDeleteException;
-import com.bjpowernode.crm.exception.ActivitySaveException;
-import com.bjpowernode.crm.exception.ActivityUpdateException;
-import com.bjpowernode.crm.exception.LoginException;
+import com.bjpowernode.crm.exception.*;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +45,15 @@ public class ControllerException{
     @ResponseBody
     @ExceptionHandler(ActivityUpdateException.class)
     public Map<String,Object> editActivityEx(Exception ex){
+        Map<String,Object> map = new HashMap<>();
+        map.put("success",false);
+        map.put("msg",ex.getMessage());
+        return map;
+    }
+    // 备注列表获取异常
+    @ResponseBody
+    @ExceptionHandler(ActivityRemarkException.class)
+    public Map<String,Object> getAmEx(Exception ex){
         Map<String,Object> map = new HashMap<>();
         map.put("success",false);
         map.put("msg",ex.getMessage());

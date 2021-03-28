@@ -16,11 +16,17 @@ public interface ActivityDao {
     List<Activity> getActivitiesByCondition(Map<String,Object> map);
 
     // 根据id删除市场活动
-    int activityDeleteById(String[] ids);
+    int deleteByIds(String[] ids);
 
     // 根据id获取市场活动对象
     Activity getActivityById(String id);
 
     // 更新市场活动
     int update(Activity activity);
+
+    // 展示详情页
+    Activity detail(String id);
+
+    // 删除当前市场活动
+    int delete(String id);
 }

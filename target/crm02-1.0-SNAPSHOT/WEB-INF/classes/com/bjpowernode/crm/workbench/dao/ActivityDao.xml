@@ -49,7 +49,7 @@
     </select>
 
     <!--删除指定ID的市场活动-->
-    <delete id="activityDeleteById">
+    <delete id="deleteByIds">
         delete from tbl_activity
         where id in
         <foreach collection="array" open="(" close=")" item="aid" separator=",">
@@ -58,6 +58,10 @@
 
     </delete>
 
+    <!--删除当前市场活动-->
+    <delete id="delete">
+        delete from tbl_activity where id=#{id}
+    </delete>
     <!--根据id获取市场活动对象-->
     <select id="getActivityById" resultType="Activity">
         select * from tbl_activity where id=#{id}
@@ -70,4 +74,16 @@
         endDate=#{endDate},cost=#{cost},description=#{description},editTime=#{editTime},editBy=#{editBy}
         where id=#{id}
     </update>
+
+    <!--获取指定市场活动，显示到详情页-->
+    <select id="detail" resultType="Activity">
+        select
+        a.id,u.name as owner,a.name,a.startDate,a.endDate,a.cost,a.description,
+        a.createTime,a.createBy,a.editTime,a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        where a.id=#{id}
+    </select>
+
 </mapper>

@@ -19,4 +19,31 @@
             #{id}
         </foreach>
     </select>
+    <!--获取备注信息列表-->
+    <select id="getList" resultType="ActivityRemark">
+        select * from tbl_activity_remark where activityId=#{activityId}
+    </select>
+
+    <!--删除备注信息-->
+    <delete id="delete">
+        delete from tbl_activity_remark where id=#{id}
+    </delete>
+
+    <!--更新备注信息-->
+    <update id="update">
+        update tbl_activity_remark
+        set noteContent=#{noteContent},editBy=#{editBy},editTime=#{editTime},editFlag=#{editFlag}
+        where id=#{id}
+    </update>
+
+    <!--获取单个备注信息-->
+    <select id="getRemark" resultType="ActivityRemark">
+        select * from tbl_activity_remark where id=#{id}
+    </select>
+
+    <!--添加备注信息-->
+    <insert id="save">
+        insert into tbl_activity_remark (id,noteContent,createTime,createBy,editFlag,activityId)
+        values (#{id},#{noteContent},#{createTime},#{createBy},#{editFlag},#{activityId})
+    </insert>
 </mapper>

@@ -2,16 +2,20 @@ package com.bjpowernode.crm.workbench.web.controller;
 
 
 import com.bjpowernode.crm.exception.ActivityDeleteException;
+import com.bjpowernode.crm.exception.ActivityRemarkException;
 import com.bjpowernode.crm.exception.ActivitySaveException;
 import com.bjpowernode.crm.exception.ActivityUpdateException;
 import com.bjpowernode.crm.settings.domain.User;
 import com.bjpowernode.crm.settings.service.UserService;
+import com.bjpowernode.crm.utils.DateTimeUtil;
 import com.bjpowernode.crm.vo.ActivityVO;
 import com.bjpowernode.crm.workbench.domain.Activity;
+import com.bjpowernode.crm.workbench.domain.ActivityRemark;
 import com.bjpowernode.crm.workbench.service.ActivityService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -79,11 +83,22 @@ public class ActivityController {
         return vo;
     }
 
-    // 删除市场活动
+    // 删除1~n个市场活动
+    @RequestMapping("deleteByIds")
+    @ResponseBody
+    public Map<String,Object> deleteByIds(String[] ids) throws ActivityDeleteException {
+        Boolean success = activityService.deleteByIds(ids);
+        Map<String,Object> map = new HashMap<>();
+        map.put("success",success);
+        return map;
+    }
+
+    // 删除当前市场活动
     @RequestMapping("delete")
     @ResponseBody
-    public Map<String,Object> delete(String[] ids) throws ActivityDeleteException {
-        Boolean success = activityService.delete(ids);
+    public Map<String,Object> delete(String id) throws ActivityDeleteException {
+        System.out.println("进入删除");
+        Boolean success = activityService.delete(id);
         Map<String,Object> map = new HashMap<>();
         map.put("success",success);
         return map;
@@ -117,6 +132,73 @@ public class ActivityController {
         }
     }
 
+    // 展示市场活动详情
+    @RequestMapping("detail")
+    public ModelAndView detail(String id){
+        ModelAndView mv = new ModelAndView();
+        Activity activity = activityService.detail(id);
+        mv.addObject("activity",activity);
+        mv.setViewName("forward:/workbench/activity/detail.jsp");
+        return mv;
+    }
 
+    // 获取备注信息列表
+    @RequestMapping("getRmList")
+    @ResponseBody
+    public Map<String,Object> getRmList(String activityId){
+        List<ActivityRemark> rmList = activityService.getRmList(activityId);
+        Map<String,Object> map = new HashMap<>();
+        map.put("rmList",rmList);
+        map.put("success",true);
+        return map;
+    }
 
+    // 删除备注信息
+    @RequestMapping("deleteRemark")
+    @ResponseBody
+    public Boolean deleteARemark(String id) throws ActivityRemarkException {
+        int result = activityService.deleteARemark(id);
+        if (result!=1){
+            return false;
+        }
+        return true;
+    }
+
+    //更新备注信息
+    @ResponseBody
+    @RequestMapping("updateRemark")
+    public Map<String,Object> updateRemark(String id,String noteContent,HttpServletRequest request){
+        ActivityRemark ar = new ActivityRemark();
+        User user = (User) request.getSession().getAttribute("user");
+        String editBy = user.getName();
+        ar.setEditBy(editBy);
+        ar.setId(id);
+        ar.setNoteContent(noteContent);
+        return activityService.updateRemark(ar);
+    }
+
+    // 添加备注信息
+    @RequestMapping("saveRemark")
+    @ResponseBody
+    public Map<String,Object> saveRemark(String noteContent,String activityId,HttpServletRequest request){
+        ActivityRemark ar = new ActivityRemark();
+        User user = (User) request.getSession().getAttribute("user");
+        String createBy = user.getName();
+        ar.setActivityId(activityId);
+        ar.setNoteContent(noteContent);
+        ar.setCreateBy(createBy);
+        return activityService.saveRemark(ar);
+    }
+
+    // 修改市场活动信息及获取修改后的市场活动对象
+    @ResponseBody
+    @RequestMapping("updateAndGet")
+    public Map<String,Object> updateAndGet(Activity activity,HttpServletRequest request) throws ActivityUpdateException {
+        // 获取修改人
+        String editBy = ((User)request.getSession().getAttribute("user")).getName();
+        activity.setEditBy(editBy);
+
+        return activityService.updateAndActivity(activity);
+    }
 }
+

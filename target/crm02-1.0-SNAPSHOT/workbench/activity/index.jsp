@@ -124,7 +124,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					$.each(data.objList,function (i,n) {
 						html +='<tr class="active">';
 						html +='<td><input type="checkbox" name="oncheck" value="'+n.id+'"/></td>';
-						html +='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'detail.html\';">'+n.name+'</a></td>';
+						html +='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/Activity/detail?id='+ n.id +'\';">'+n.name+'</a></td>';
 						html +='<td>'+n.owner+'</td>';
 						html +='<td>'+n.startDate+'</td>';
 						html +='<td>'+n.endDate+'</td>';
@@ -182,7 +182,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					})
 					// 发送ajax请求，删除数据
 					$.ajax({
-						url:"workbench/Activity/delete",
+						url:"workbench/Activity/deleteByIds",
 						type:"post",
 						dataType:"json",
 						traditional:true,
@@ -227,8 +227,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					dataType:"json",
 					data:{"id":id},
 					success:function (data) {
-						var html = "<option></option>";
-
+						var html = "";
 						$.each(data.ulist,function (i,n) {
 							html += "<option value='"+n.id+"'>"+n.name+"</option>";
 						})
@@ -388,11 +387,11 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						<div class="form-group">
 							<label for="edit-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-startDate" value="2020-10-10">
+								<input type="text" class="form-control time" id="edit-startDate" readonly>
 							</div>
 							<label for="edit-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-endDate" value="2020-10-20">
+								<input type="text" class="form-control time" id="edit-endDate" readonly>
 							</div>
 						</div>
 						
